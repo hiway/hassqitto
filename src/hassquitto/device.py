@@ -46,10 +46,10 @@ class Device:
     _on_connected_callback: Optional[Callable] = None
 
     def __post_init__(self):
-        self.client = mqtt.Client(client_id=self.object_id)
         self.name_slug = slugify(self.name)
         if not self.object_id:
             self.object_id = self.name_slug
+        self.client = mqtt.Client(client_id=self.object_id)
         if not self.identifiers:
             self.identifiers = [self.object_id]
         possible_entities = [
