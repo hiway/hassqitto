@@ -193,6 +193,31 @@ class Device:
 
         return wrapper
 
+    def call_after(self, seconds: int):
+        """Call handler after seconds"""
+        job = None
+
+        def wrapper(func):
+            assert self.scheduler
+
+            def inner():
+                nonlocal job
+                assert self.scheduler
+                assert job
+                func()
+                self.scheduler.remove_job(job_id=job.id)
+
+            nonlocal job
+            job = self.scheduler.add_job(
+                inner,
+                "interval",
+                seconds=seconds,
+                misfire_grace_time=5,
+            )
+            return func
+
+        return wrapper
+
     def on_connected(self, func):
         """Callback for connected event"""
         self._on_connected_callback = func
