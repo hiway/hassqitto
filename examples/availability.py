@@ -5,11 +5,11 @@ import logging
 logging.getLogger("hassquitto").setLevel(logging.DEBUG)
 
 
-class Hello(hq.Device):
+class Device(hq.Device):
     pass
 
 
-hello = Hello(name="Example Availability")
+device = Device(name="Example Availability")
 
 
 if __name__ == "__main__":
@@ -18,7 +18,7 @@ if __name__ == "__main__":
     # look for "Example Availability" and click on the name.
 
     # Connect to MQTT.
-    hello.connect(
+    device.connect(
         host="homeassistant.local",
         port=1883,  # MQTT port.
         username="example",  # MQTT username.
@@ -29,23 +29,23 @@ if __name__ == "__main__":
     time.sleep(10)
 
     # Device is available.
-    hello.set_available()
+    device.set_available()
 
     for i in range(5):
         # Device is online.
-        hello.set_online()
+        device.set_online()
         time.sleep(3)
 
         # Device is offline.
-        hello.set_offline()
+        device.set_offline()
         time.sleep(3)
 
     # Device is not available.
-    hello.set_not_available()
+    device.set_not_available()
     time.sleep(5)
 
     # Remove the example device from Home Assistant.
-    hello.destroy_discovery()
+    device.destroy_discovery()
 
     # Disconnect from MQTT.
-    hello.disconnect()
+    device.disconnect()
