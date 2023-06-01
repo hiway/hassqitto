@@ -134,7 +134,7 @@ class Device:
             time.sleep(0.2)
             logger.debug("Sending discovery for %s...", entity.name)
             entity.send_discovery()
-            time.sleep(0.2)
+            time.sleep(0.4)
             entity.set_available()
 
     def destroy_discovery(self):
