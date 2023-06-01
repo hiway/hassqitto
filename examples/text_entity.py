@@ -33,7 +33,7 @@ if __name__ == "__main__":
     time.sleep(10)
 
     # Set the text entity.
-    device.greeting.publish_state("Device, World!")
+    device.greeting.publish_state("Hello, World!")
     time.sleep(10)
     device.greeting.publish_state("Goodbye, World!")
 
