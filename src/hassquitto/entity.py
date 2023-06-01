@@ -1,3 +1,4 @@
+import time
 import json
 from dataclasses import dataclass
 from typing import Callable, Optional, Any
@@ -56,6 +57,7 @@ class Entity:
             self.topics.config, json.dumps(self.discovery_config())
         )
         if self.initial_state:
+            time.sleep(0.4)
             self.publish_state(self.initial_state)
 
     def destroy_discovery(self):
@@ -241,7 +243,38 @@ class Siren(Entity):
 class Switch(Entity):
     """Switch Entity"""
 
+    initial_state: str = "OFF"
+    is_on = False
     component_type: str = "switch"
+
+    # def __post_init__(self):
+    #     super().__post_init__()
+    #     self.is_on = self.initial_state == "ON"
+
+    def toggle(self):
+        if self.is_on:
+            self.turn_off()
+        else:
+            self.turn_on()
+
+    def turn_on(self):
+        self.is_on = True
+        self.publish_state("ON")
+
+    def turn_off(self):
+        self.is_on = False
+        self.publish_state("OFF")
+
+    def on_change(self, func):
+        def _on_change(state):
+            if state == "ON":
+                self.turn_on()
+                func(state)
+            elif state == "OFF":
+                self.turn_off()
+                func(state)
+
+        return self.on_command(_on_change)
 
 
 @dataclass(kw_only=True)
