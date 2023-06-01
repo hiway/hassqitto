@@ -103,12 +103,13 @@ class TPLink4GRouterAPI:
     def open_browser(self):
         """Open URL in browser"""
         logger.info("Opening browser: %s", self.router_url)
+        self.driver.start_client()
         self.driver.get(self.router_url)
 
     def close_browser(self) -> None:
         """Close browser"""
         logger.info("Closing browser.")
-        self.driver.quit()
+        self.driver.stop_client()
 
     def login(self) -> None:
         """Log in to router web UI"""
@@ -188,26 +189,25 @@ class TPLink4GRouterAPI:
             raise IndexError("No more messages.")
         return Message(sender=sender, timestamp=timestamp, text=text)
 
-    def unread_messages(self, limit: int = 10) -> Iterable[Message]:
+    def unread_messages(self, limit: int = 10) -> list[Message]:
         """Iterate over unread messages"""
-        self.open_basic_home_page()
         self.open_sms_page()
-
+        messages = []
         try:
             self.open_sms_detail_page()
         except TimeoutException as exc:
             logger.info("No new messages.")
             raise IndexError("No new messages.") from exc
-        yield self.get_sms()
+        messages.append(self.get_sms())
 
         for _ in range(limit - 1):
             self.open_sms_detail_next_page()
             try:
-                yield self.get_sms()
+                messages.append(self.get_sms())
             except IndexError:
                 break
 
-        self.open_basic_home_page()
+        return messages
 
     def get_status(self) -> Status:
         """Get basic status of router"""
@@ -286,6 +286,7 @@ device.manufacturer = "TP-Link"
 
 
 @device.on_connected
+@device.on_interval(minutes=10)
 def on_connected():
     try:
         device.status.publish_state("Querying...")
@@ -299,12 +300,19 @@ def on_connected():
         device.ipv4_address.publish_state(status.ipv4_address)
         device.ipv6_address.publish_state(status.ipv6_address)
 
+        for sms in reversed(api.unread_messages(limit=3)):
+            device.text_message.publish_state(
+                f"{sms.text} [{sms.sender} @{sms.timestamp}]"
+            )
+            time.sleep(1)
+
         api.logout()
-        api.close_browser()
         device.status.publish_state("Online")
     except Exception as exc:
         logger.error(exc)
         device.status.publish_state("Error")
+    finally:
+        api.close_browser()
 
 
 @device.reboot_router.on_click
