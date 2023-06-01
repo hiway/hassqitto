@@ -134,6 +134,9 @@ class Button(Entity):
 
     component_type: str = "button"
 
+    def on_click(self, func):
+        return self.on_command(func)
+
 
 @dataclass(kw_only=True)
 class Camera(Entity):
