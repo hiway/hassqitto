@@ -1,10 +1,12 @@
 import logging
 import platform
 import time
+import threading
 from dataclasses import dataclass
 from typing import Iterable
 from os import environ
 
+import requests
 from selenium import webdriver
 from selenium.common.exceptions import NoSuchElementException, TimeoutException
 from selenium.webdriver.firefox.options import Options as FirefoxOptions
@@ -129,7 +131,6 @@ class TPLink4GRouterAPI:
                 self._click_element(By.ID, "confirm-yes")
                 logger.info("Login successful!")
             except NoSuchElementException as exc:
-                logger.error("!!!LOLWHUT?")
                 raise exc
         finally:
             time.sleep(10)  # Home page takes longer to render after login
@@ -238,6 +239,13 @@ class TPLink4GRouterAPI:
             data_used_monthly=data_used_monthly,
         )
 
+    def reboot_router(self):
+        """Reboot router"""
+        self._click_element(By.XPATH, '//*[@id="topReboot"]')
+        self._click_element(
+            By.XPATH, "/html/body/div[8]/div/div[4]/div/div[2]/div/div[2]/button"
+        )
+
 
 class TPLink4GRouter(hq.Device):
     data_used_monthly = hq.Sensor(
@@ -279,31 +287,63 @@ device.manufacturer = "TP-Link"
 
 @device.on_connected
 def on_connected():
-    api.open_browser()
-    api.login()
-    status = api.get_status()
-    device.data_used_monthly.publish_state(status.data_used_monthly)
-    device.signal_strength.publish_state(status.signal_strength)
-    device.internet_status.publish_state(status.internet_status)
-    device.ipv4_address.publish_state(status.ipv4_address)
-    device.ipv6_address.publish_state(status.ipv6_address)
-    device.status.publish_state("Online")
-    api.logout()
-    api.close_browser()
+    try:
+        device.status.publish_state("Querying...")
+        api.open_browser()
+        api.login()
+        status = api.get_status()
+
+        device.data_used_monthly.publish_state(status.data_used_monthly)
+        device.signal_strength.publish_state(status.signal_strength)
+        device.internet_status.publish_state(status.internet_status)
+        device.ipv4_address.publish_state(status.ipv4_address)
+        device.ipv6_address.publish_state(status.ipv6_address)
+
+        api.logout()
+        api.close_browser()
+        device.status.publish_state("Online")
+    except Exception as exc:
+        logger.error(exc)
+        device.status.publish_state("Error")
 
 
 @device.reboot_router.on_click
 def reboot_router_on_click(_state):
+    reboot_thread = threading.Thread(target=reboot_router)
+    reboot_thread.start()
+
+    device.status.publish_state("Rebooting...")
     device.set_not_available()
     device.set_offline()
-    device.status.publish_state("Rebooting...")
-    device.call_after(10)(check_router_is_online)
 
 
-def check_router_is_online():
-    device.set_available()
-    device.set_online()
-    device.status.publish_state("Online")
+def reboot_router():
+    try:
+        api.open_browser()
+        api.login()
+        api.reboot_router()
+        api.close_browser()
+    except Exception as exc:
+        logger.error(exc)
+        device.status.publish_state("Error")
+    finally:
+        try:
+            api.close_browser()
+        except Exception as exc:
+            logger.error(exc)
+
+        logger.info("Checking if router is back online.")
+        time.sleep(20)
+        while True:
+            try:
+                _ = requests.get(ROUTER_URL, timeout=10)
+                device.set_available()
+                device.set_online()
+                device.status.publish_state("Online")
+                break
+            except Exception as exc:
+                logger.error(exc)
+                time.sleep(10)
 
 
 try:
