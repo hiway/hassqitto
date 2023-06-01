@@ -197,5 +197,5 @@ class Device:
         return func
 
     def run(self):
-        assert self.client
-        self.client.loop_forever()
+        while True:
+            time.sleep(0.5)
