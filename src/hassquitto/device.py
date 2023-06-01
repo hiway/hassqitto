@@ -129,6 +129,7 @@ class Device:
     def send_discovery(self):
         assert self.client
         assert self.topics
+        logger.debug("Sending discovery for device %s...", self.name)
         self.client.publish(self.topics.config, json.dumps(self.discovery_config()))
         for entity in self.entities.values():
             time.sleep(0.2)
