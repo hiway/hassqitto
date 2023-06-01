@@ -83,8 +83,6 @@ class Device:
         logger.debug("Connected.")
         self.client.loop_start()
         self.send_discovery()
-        time.sleep(0.5)
-        self.client.publish(self.topics.availability, "online")
         self.scheduler.start()
         if self._on_connected_callback:
             self._on_connected_callback()
