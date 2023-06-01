@@ -1,4 +1,3 @@
-import time
 import hassquitto as hq
 import logging
 
