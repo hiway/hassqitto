@@ -67,26 +67,26 @@ class Entity:
     def discovery_config(self):
         assert self.device
         assert self.topics
-        device_config = self.device.discovery_config()
-        device_config["name"] = self.name
-        device_config["object_id"] = self.object_id
-        device_config["unique_id"] = self.object_id
-        device_config["availability_topic"] = self.topics.availability
-        device_config["state_topic"] = self.topics.state
-        device_config["command_topic"] = self.topics.command
+        entity_config = self.device.discovery_config()
+        entity_config["name"] = self.name
+        entity_config["object_id"] = self.object_id
+        entity_config["unique_id"] = self.object_id
+        entity_config["availability_topic"] = self.topics.availability
+        entity_config["state_topic"] = self.topics.state
+        entity_config["command_topic"] = self.topics.command
         if self.entity_category:
-            device_config["entity_category"] = self.entity_category
+            entity_config["entity_category"] = self.entity_category
         else:
-            del device_config["entity_category"]
+            del entity_config["entity_category"]
         if self.device_class:
-            device_config["device_class"] = self.device_class
+            entity_config["device_class"] = self.device_class
         if (
             isinstance(self, Sensor) and self.unit_of_measurement
         ):  # pylint: disable = no-member
-            device_config[
+            entity_config[
                 "unit_of_measurement"
             ] = self.unit_of_measurement  # pylint: disable = no-member
-        return device_config
+        return entity_config
 
     def set_available(self):
         assert self.device
@@ -95,7 +95,7 @@ class Entity:
         self.device.client.publish(self.topics.availability, "online")
         logger.debug("%s is Online.", self.name)
 
-    def set_unavailable(self):
+    def set_not_available(self):
         assert self.device
         assert self.device.client
         assert self.topics
