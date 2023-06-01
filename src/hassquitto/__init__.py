@@ -24,6 +24,7 @@ from .entity import (
     Text,
     Vacuum,
 )
+from .logging import get_logger
 
 
 __all__ = [
@@ -51,4 +52,5 @@ __all__ = [
     "TagScanner",
     "Text",
     "Vacuum",
+    "get_logger",
 ]
