@@ -1,2 +1,3 @@
-# hassqitto
+# hassquitto
+
 Home-Assistant MQTT Device
