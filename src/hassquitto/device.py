@@ -7,6 +7,7 @@ import paho.mqtt.client as mqtt
 from apscheduler.schedulers.background import BackgroundScheduler
 from slugify import slugify
 
+from .entity import Entity
 from .logging import get_logger
 from .topics import Topics
 
@@ -56,6 +57,11 @@ class Device:
             for name in dir(self)
             if name not in self.__dict__ and not name.startswith("__")
         ]
+        entities = [e for e in possible_entities if isinstance(e, Entity)]
+        for entity in entities:
+            assert entity.name not in self.entities
+            entity.device = self
+            self.entities.update({entity.name: entity})
         base_topic = f"{self.discovery_prefix}/{self.component_type}/{self.object_id}"
         self.topics = Topics(base_topic)
         self.scheduler = BackgroundScheduler()
@@ -77,6 +83,7 @@ class Device:
         logger.debug("Connected.")
         self.client.loop_start()
         self.send_discovery()
+        time.sleep(0.2)
         self.client.publish(self.topics.availability, "online")
         self.scheduler.start()
         if self._on_connected_callback:
@@ -125,18 +132,19 @@ class Device:
         assert self.client
         assert self.topics
         self.client.publish(self.topics.config, json.dumps(self.discovery_config()))
-        time.sleep(0.1)
         for entity in self.entities.values():
+            time.sleep(0.2)
+            logger.debug("Sending discovery for %s...", entity.name)
             entity.send_discovery()
-            time.sleep(0.1)
+            time.sleep(0.2)
             entity.set_available()
 
     def destroy_discovery(self):
         assert self.client
         assert self.topics
         for entity in self.entities.values():
-            entity.destroy_discovery()
             time.sleep(0.1)
+            entity.destroy_discovery()
         self.client.publish(self.topics.config, "")
         logger.warning("Device %s discovery destroyed.", self.name)
 
