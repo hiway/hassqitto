@@ -1,4 +1,7 @@
+import logging
 import hassquitto as hq
+
+logging.getLogger("hassquitto").setLevel(logging.DEBUG)
 
 # Create a new device with the name "Example Device"
 device = hq.Device(name="Example Device")
@@ -9,7 +12,9 @@ device = hq.Device(name="Example Device")
 
 # Function to run when the device connects to the MQTT broker
 @device.on_connect
-async def device_connected(device):
+async def device_connected():
+    print("Device connected")
+
     # Update device status
     await device.status("Hello, World!")
 
@@ -23,7 +28,8 @@ try:
     )
 except KeyboardInterrupt:
     # Stop the device when user presses Ctrl+C
-    device.stop()
+    pass
 finally:
     # Remove the device from Home Assistant
     device.destroy()
+    device.stop()
