@@ -53,6 +53,8 @@ def object_id(name_: str) -> str:
     Raises:
         ValueError: Invalid name
     """
+    if not re.match(r"^[a-zA-Z0-9_ ]+$", name_):
+        raise ValueError("Invalid object ID")
     return slugify(name_).replace("-", "_")
 
 
@@ -69,6 +71,8 @@ def unique_id(name_: str) -> str:
     Raises:
         ValueError: Invalid name
     """
+    if not re.match(r"^[a-zA-Z0-9_ ]+$", name_):
+        raise ValueError("Invalid unique ID")
     return slugify(name_).replace("-", "_")
 
 
