@@ -16,7 +16,12 @@ async def on_message(client, userdata, msg):
 
 
 async def main():
-    await transport.connect("homeassistant.local", 1883, "example", "example")
+    await transport.connect(
+        host="homeassistant.local",
+        port=1883,
+        username="example",
+        password="example",
+    )
     await transport.subscribe("homeassistant/switch/transport_test/command")
 
     message = json.dumps(
@@ -37,6 +42,7 @@ async def main():
         }
     )
     await transport.publish("homeassistant/switch/transport_test/config", message)
+
     await asyncio.sleep(1)
     await transport.publish(
         "homeassistant/switch/transport_test/availability", "online"
