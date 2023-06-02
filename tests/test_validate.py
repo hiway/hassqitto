@@ -1,5 +1,5 @@
 import pytest
-from hassquitto import validate 
+from hassquitto import validate
 
 
 def test_name_valid():
@@ -29,6 +29,15 @@ def test_object_id_invalid():
         validate.object_id("Invalid Name @#$")
 
 
+def test_unique_id_valid():
+    assert validate.unique_id("Valid Name 123") == "valid_name_123"
+
+
+def test_unique_id_invalid():
+    with pytest.raises(ValueError):
+        validate.unique_id("Invalid Name @#$")
+
+
 def test_discovery_prefix_valid():
     assert validate.discovery_prefix("homeassistant") == "homeassistant"
     assert validate.discovery_prefix("valid_prefix_123") == "valid_prefix_123"
@@ -46,3 +55,15 @@ def test_component_type_valid():
 def test_component_type_invalid():
     with pytest.raises(ValueError):
         validate.component_type("invalid_type @#$")
+
+
+def test_topic_valid():
+    assert (
+        validate.topic("homeassistant/switch/transport_test/state")
+        == "homeassistant/switch/transport_test/state"
+    )
+
+
+def test_topic_invalid():
+    with pytest.raises(ValueError):
+        validate.topic("homeassistant-switch-transport_test-state")

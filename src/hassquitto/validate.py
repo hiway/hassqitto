@@ -56,6 +56,22 @@ def object_id(name_: str) -> str:
     return slug(name_).replace("-", "_")
 
 
+def unique_id(name_: str) -> str:
+    """
+    Validate device or entity name and convert it to a Home Assistant unique ID.
+
+    Args:
+        name: Device name.
+
+    Returns:
+        Validated device unique ID.
+
+    Raises:
+        ValueError: Invalid device name
+    """
+    return slug(name_).replace("-", "_")
+
+
 def discovery_prefix(discovery_prefix_: str) -> str:
     """
     Validate discovery prefix.
@@ -90,3 +106,21 @@ def component_type(component_type_: str) -> str:
     if not re.match(r"^[a-zA-Z0-9_]+$", component_type_):
         raise ValueError("Invalid component type")
     return component_type_
+
+
+def topic(topic_: str) -> str:
+    """
+    Validate topic.
+
+    Args:
+        name: Topic.
+
+    Returns:
+        Validated topic.
+
+    Raises:
+        ValueError: Invalid topic.
+    """
+    if not re.match(r"^[a-zA-Z0-9_/]+$", topic_):
+        raise ValueError("Invalid topic")
+    return topic_
