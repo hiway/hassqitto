@@ -64,6 +64,7 @@ class Device:
         password: str = None,
     ):
         self._mqtt.on_connect(self._start)
+        self._mqtt.on_message(self._on_message)
         logger.info("Connecting to MQTT broker")
         await self._mqtt.connect(
             host=host,
@@ -133,12 +134,27 @@ class Device:
         logger.info("Publishing device config")
         config_topic = self._topics.config
         await self._mqtt.publish(config_topic, json.dumps(config))
+        await self._mqtt.subscribe(self._topics.command)
+        await self._mqtt.subscribe(self._topics.state)
         await asyncio.sleep(0.5)
         await self.available()
         self._scheduler.start()
         if self._on_connect_callback:
             logger.info("Running on_connect callback")
             await self._on_connect_callback()
+
+    async def _on_message(self, client, userdata, message):
+        if message.topic == self._topics.command:
+            await self._on_command(message.payload.decode())
+        elif message.topic == self._topics.state:
+            await self._on_state(message.payload.decode())
+
+    async def _on_command(self, payload):
+        logger.info(f"Received command: {payload}")
+
+    async def _on_state(self, payload):
+        logger.info(f"Received state: {payload}")
+        self._status = payload.decode()
 
     async def available(self):
         logger.info("Device is available")
