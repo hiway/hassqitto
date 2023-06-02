@@ -1,6 +1,6 @@
 from enum import Enum
 
 
-class BinaryState(Enum):
+class SwitchState(Enum):
     OFF = "OFF"
     ON = "ON"

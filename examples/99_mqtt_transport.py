@@ -1,5 +1,6 @@
 import asyncio
 import json
+from hassquitto.symbols import SwitchState
 from hassquitto.transport import AsyncMQTT
 
 transport = AsyncMQTT()
@@ -50,9 +51,13 @@ async def main():
 
     for i in range(3):
         await asyncio.sleep(3)
-        await transport.publish("homeassistant/switch/transport_test/state", "ON")
+        await transport.publish(
+            "homeassistant/switch/transport_test/state", SwitchState.ON.value
+        )
         await asyncio.sleep(3)
-        await transport.publish("homeassistant/switch/transport_test/state", "OFF")
+        await transport.publish(
+            "homeassistant/switch/transport_test/state", SwitchState.OFF.value
+        )
 
     await asyncio.sleep(1)
     await transport.publish(
