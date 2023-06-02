@@ -1,0 +1,13 @@
+site_name: Hassquitto
+
+theme:
+  name: "material"
+
+plugins:
+  - mkdocstrings
+
+watch:
+  - "src/hassquitto"
+
+nav:
+  - Home: index.md
