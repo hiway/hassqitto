@@ -3,7 +3,7 @@ import logging
 import json
 
 from hassquitto.logging import get_logger
-from hassquitto.symbols import SwitchState
+from hassquitto.symbols import DeviceAvailability, SwitchState
 from hassquitto.transport import AsyncMQTT
 
 
@@ -39,8 +39,8 @@ async def main():
         {
             "name": "Transport Test Switch",
             "availability_topic": "homeassistant/switch/transport_test/availability",
-            "payload_available": "online",
-            "payload_not_available": "offline",
+            "payload_available": DeviceAvailability.ONLINE.value,
+            "payload_not_available": DeviceAvailability.OFFLINE.value,
             "state_topic": "homeassistant/switch/transport_test/state",
             "command_topic": "homeassistant/switch/transport_test/command",
             "object_id": "transport_test",
@@ -58,7 +58,8 @@ async def main():
 
     await asyncio.sleep(1)
     await transport.publish(
-        "homeassistant/switch/transport_test/availability", "online"
+        "homeassistant/switch/transport_test/availability",
+        DeviceAvailability.ONLINE.value,
     )
     logger.info("Device is online.")
 
@@ -77,7 +78,8 @@ async def main():
 
     await asyncio.sleep(1)
     await transport.publish(
-        "homeassistant/switch/transport_test/availability", "offline"
+        "homeassistant/switch/transport_test/availability",
+        DeviceAvailability.OFFLINE.value,
     )
     logger.info("Device is offline.")
 
