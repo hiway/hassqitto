@@ -6,7 +6,7 @@ from hassquitto.transport import AsyncMQTT
 
 @pytest.fixture
 async def mqtt():
-    mqtt = AsyncMQTT()
+    mqtt = AsyncMQTT(client_id="test")
     mqtt._client.username_pw_set = MagicMock()
     mqtt._client.connect = MagicMock()
     mqtt._client.disconnect = MagicMock()
