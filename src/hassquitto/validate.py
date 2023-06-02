@@ -53,7 +53,7 @@ def object_id(name_: str) -> str:
     Raises:
         ValueError: Invalid name
     """
-    return slug(name_).replace("-", "_")
+    return slugify(name_).replace("-", "_")
 
 
 def unique_id(name_: str) -> str:
@@ -69,7 +69,7 @@ def unique_id(name_: str) -> str:
     Raises:
         ValueError: Invalid name
     """
-    return slug(name_).replace("-", "_")
+    return slugify(name_).replace("-", "_")
 
 
 def discovery_prefix(discovery_prefix_: str) -> str:
