@@ -11,16 +11,16 @@ def name(name_: str) -> str:
     Validate device or entity name.
 
     Args:
-        name: Device name.
+        name: Device or entity name.
 
     Returns:
-        Validated device name.
+        Validated name.
 
     Raises:
-        ValueError: Invalid device name.
+        ValueError: Invalid name.
     """
     if not re.match(r"^[a-zA-Z0-9 ]+$", name_):
-        raise ValueError("Invalid device name")
+        raise ValueError("Invalid name")
     return name_
 
 
@@ -35,7 +35,7 @@ def slug(name_: str) -> str:
         Validated device slug.
 
     Raises:
-        ValueError: Invalid device name
+        ValueError: Invalid name
     """
     return slugify(name(name_))
 
@@ -51,7 +51,7 @@ def object_id(name_: str) -> str:
         Validated device object ID.
 
     Raises:
-        ValueError: Invalid device name
+        ValueError: Invalid name
     """
     return slug(name_).replace("-", "_")
 
@@ -67,7 +67,7 @@ def unique_id(name_: str) -> str:
         Validated device unique ID.
 
     Raises:
-        ValueError: Invalid device name
+        ValueError: Invalid name
     """
     return slug(name_).replace("-", "_")
 
