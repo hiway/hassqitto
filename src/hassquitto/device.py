@@ -128,6 +128,7 @@ class Device:
             "unique_id": self._unique_id,
             "entity_category": self._entity_category,
             "device": self._device_config,
+            "icon": "mdi:information-outline",
         }
         logger.info("Publishing device config")
         config_topic = self._topics.config
