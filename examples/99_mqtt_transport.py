@@ -27,7 +27,7 @@ async def main():
 
     message = json.dumps(
         {
-            "name": "Transport Test",
+            "name": "Transport Test Switch",
             "availability_topic": "homeassistant/switch/transport_test/availability",
             "payload_available": "online",
             "payload_not_available": "offline",
@@ -36,6 +36,7 @@ async def main():
             "object_id": "transport_test",
             "unique_id": "transport_test",
             "device": {
+                "name": "Transport Test",
                 "identifiers": ["transport_test"],
                 "manufacturer": "Hassquitto",
                 "model": "MQTT Transport",
