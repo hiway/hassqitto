@@ -12,8 +12,8 @@ class AsyncMQTT:
     Async MQTT Transport
     """
 
-    def __init__(self) -> None:
-        self._client = mqtt.Client()
+    def __init__(self, client_id: str) -> None:
+        self._client = mqtt.Client(client_id=client_id)
         self.loop = None
 
     def ensure_loop(self) -> None:

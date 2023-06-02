@@ -12,7 +12,7 @@ logger = get_logger(__name__)
 logger.setLevel(logging.DEBUG)
 
 # Instantiate MQTT transport
-transport = AsyncMQTT()
+transport = AsyncMQTT(client_id="transport_test")
 
 
 # Define callback for MQTT connection
