@@ -67,3 +67,30 @@ def test_topic_valid():
 def test_topic_invalid():
     with pytest.raises(ValueError):
         validate.topic("homeassistant-switch-transport_test-state")
+
+
+def test_version_string_valid():
+    assert validate.version_string("1.2.3") == "1.2.3"
+    assert validate.version_string("v1.2.3") == "v1.2.3"
+    assert validate.version_string("Version-1.2.3") == "Version-1.2.3"
+
+
+def test_version_string_invalid():
+    with pytest.raises(ValueError):
+        validate.version_string("Version 1.2.3")
+
+
+def test_url_valid():
+    assert validate.url("https://example.com") == "https://example.com"
+    assert validate.url("http://example.com") == "http://example.com"
+    assert validate.url("https://example.com:1234") == "https://example.com:1234"
+    assert validate.url("http://example.com:1234") == "http://example.com:1234"
+
+
+def test_url_invalid():
+    with pytest.raises(ValueError):
+        validate.url("example.com")
+    with pytest.raises(ValueError):
+        validate.url("example.com:1234")
+    with pytest.raises(ValueError):
+        validate.url("example.com:1234/path")

@@ -2,11 +2,12 @@
 Validation functions
 """
 import re
+from urllib.parse import urlparse
 
-from slugify import slugify
+from slugify import slugify as _slugify
 
 
-def name(name_: str) -> str:
+def name(name_: str, allow_empty: bool = False) -> str:
     """
     Validate device or entity name.
 
@@ -19,8 +20,10 @@ def name(name_: str) -> str:
     Raises:
         ValueError: Invalid name.
     """
+    if allow_empty and not name_:
+        return name_
     if not re.match(r"^[a-zA-Z0-9 ]+$", name_):
-        raise ValueError("Invalid name")
+        raise ValueError(f"Invalid name: {name_!r}")
     return name_
 
 
@@ -37,7 +40,9 @@ def slug(name_: str) -> str:
     Raises:
         ValueError: Invalid name
     """
-    return slugify(name(name_))
+    if not name_:
+        return name_
+    return _slugify(name(name_))
 
 
 def object_id(name_: str) -> str:
@@ -55,7 +60,7 @@ def object_id(name_: str) -> str:
     """
     if not re.match(r"^[a-zA-Z0-9_ ]+$", name_):
         raise ValueError("Invalid object ID")
-    return slugify(name_).replace("-", "_")
+    return _slugify(name_).replace("-", "_")
 
 
 def unique_id(name_: str) -> str:
@@ -73,7 +78,7 @@ def unique_id(name_: str) -> str:
     """
     if not re.match(r"^[a-zA-Z0-9_ ]+$", name_):
         raise ValueError("Invalid unique ID")
-    return slugify(name_).replace("-", "_")
+    return _slugify(name_).replace("-", "_")
 
 
 def discovery_prefix(discovery_prefix_: str) -> str:
@@ -128,3 +133,47 @@ def topic(topic_: str) -> str:
     if not re.match(r"^[a-zA-Z0-9_/]+$", topic_):
         raise ValueError("Invalid topic")
     return topic_
+
+
+def version_string(version_string_: str) -> str:
+    """
+    Validate version string.
+
+    Args:
+        name: Version string.
+
+    Returns:
+        Validated version string.
+
+    Raises:
+        ValueError: Invalid version string.
+    """
+    if not version_string_:
+        return version_string_
+    if not re.match(r"^[a-zA-Z0-9_.-]+$", version_string_):
+        raise ValueError("Invalid version string")
+    return version_string_
+
+
+def url(url_: str) -> str:
+    """
+    Validate URL.
+
+    Args:
+        name: URL.
+
+    Returns:
+        Validated URL.
+
+    Raises:
+        ValueError: Invalid URL.
+    """
+    if not url_:
+        return url_
+    try:
+        result = urlparse(url_)
+        if not all([result.scheme, result.netloc]):
+            raise ValueError("Invalid URL")
+    except ValueError:
+        raise ValueError("Invalid URL")
+    return url_
