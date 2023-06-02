@@ -4,11 +4,6 @@ from unittest.mock import AsyncMock, MagicMock
 from hassquitto.transport import AsyncMQTT
 
 
-import pytest
-from unittest.mock import AsyncMock, MagicMock
-from hassquitto.transport import AsyncMQTT
-
-
 @pytest.fixture
 async def mqtt():
     mqtt = AsyncMQTT()
