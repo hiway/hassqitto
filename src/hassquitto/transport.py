@@ -90,12 +90,30 @@ class AsyncMQTT:
         self._client.loop_stop()
         self._client.disconnect()
 
-    async def publish(self, topic: str, payload: str) -> None:
+    async def publish(
+        self,
+        topic: str,
+        payload: str,
+        qos: int = 0,
+        retain: bool = False,
+    ) -> None:
         """
         Publish message to MQTT broker
         """
         self.ensure_loop()
-        await sync_to_async(self._client.publish)(topic, payload)
+        await sync_to_async(self._client.publish)(topic, payload, qos, retain)
+
+    def sync_publish(
+        self,
+        topic: str,
+        payload: str,
+        qos: int = 0,
+        retain: bool = False,
+    ) -> None:
+        """
+        Publish message to MQTT broker
+        """
+        self._client.publish(topic, payload, qos, retain)
 
     async def subscribe(self, topic: str) -> None:
         """

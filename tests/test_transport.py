@@ -1,6 +1,8 @@
 import asyncio
 import pytest
 from unittest.mock import AsyncMock, MagicMock
+
+from hassquitto.symbols import MqttQos
 from hassquitto.transport import AsyncMQTT
 
 
@@ -23,7 +25,23 @@ async def test_publish(mqtt):
     topic = "test/topic"
     payload = "test payload"
     await mqtt.publish(topic, payload)
-    mqtt._client.publish.assert_called_once_with(topic, payload)
+    mqtt._client.publish.assert_called_once_with(topic, payload, 0, False)
+
+
+async def test_publish_with_qos(mqtt):
+    topic = "test/topic"
+    payload = "test payload"
+    qos = MqttQos.AT_LEAST_ONCE
+    await mqtt.publish(topic, payload, qos)
+    mqtt._client.publish.assert_called_once_with(topic, payload, qos, False)
+
+
+async def test_publish_with_retain(mqtt):
+    topic = "test/topic"
+    payload = "test payload"
+    retain = True
+    await mqtt.publish(topic, payload, retain=retain)
+    mqtt._client.publish.assert_called_once_with(topic, payload, 0, retain)
 
 
 async def test_subscribe(mqtt):
