@@ -110,6 +110,7 @@ class TPLink4GRouterAPI:
         """Close browser"""
         logger.info("Closing browser.")
         self.driver.stop_client()
+        # self.driver.quit()
 
     def login(self) -> None:
         """Log in to router web UI"""
@@ -286,7 +287,7 @@ device.manufacturer = "TP-Link"
 
 
 @device.on_connected
-@device.on_interval(minutes=10)
+@device.on_interval(minutes=2)
 def on_connected():
     try:
         device.status.publish_state("Querying...")
@@ -299,7 +300,11 @@ def on_connected():
         device.internet_status.publish_state(status.internet_status)
         device.ipv4_address.publish_state(status.ipv4_address)
         device.ipv6_address.publish_state(status.ipv6_address)
+    except Exception as exc:
+        logger.error(exc)
+        device.status.publish_state("Error")
 
+    try:
         for sms in reversed(api.unread_messages(limit=3)):
             device.text_message.publish_state(
                 f"{sms.text} [{sms.sender} @{sms.timestamp}]"
@@ -310,8 +315,9 @@ def on_connected():
         device.status.publish_state("Online")
     except Exception as exc:
         logger.error(exc)
-        device.status.publish_state("Error")
+        device.status.publish_state("Online")
     finally:
+        api.logout()
         api.close_browser()
 
 
