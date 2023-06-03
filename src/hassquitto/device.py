@@ -63,6 +63,8 @@ class Device:
         self._status = None
         self._on_connect_callback = None
         self._queue = asyncio.Queue()
+        self._sync_thread = None
+        self._loop_forever = False
 
     async def _start(
         self,
@@ -82,11 +84,16 @@ class Device:
             username=username,
             password=password,
         )
+        while self._queue.empty():
+            await asyncio.sleep(0.1)
         try:
-            while loop_forever:
-                await asyncio.sleep(1)
+            self._loop_forever = loop_forever
+            while self._loop_forever:
+                await asyncio.sleep(0.1)
         except asyncio.CancelledError:
             pass
+        finally:
+            logger.info("Quitting")
 
     def start(
         self,
@@ -97,6 +104,7 @@ class Device:
         loop_forever: bool = False,
     ):
         if awaited():
+            logger.info("Starting device asynchronously")
             return self._start(
                 host=host,
                 port=port,
@@ -105,7 +113,8 @@ class Device:
                 loop_forever=False,
             )
         else:
-            threading.Thread(
+            logger.info("Starting device synchronously")
+            self._sync_thread = threading.Thread(
                 target=asyncio.run,
                 args=(
                     self._start(
@@ -129,6 +138,7 @@ class Device:
         password: str = None,
     ):
         if awaited():
+            logger.info("Starting device asynchronously")
             return self._start(
                 host=host,
                 port=port,
@@ -137,7 +147,8 @@ class Device:
                 loop_forever=True,
             )
         else:
-            threading.Thread(
+            logger.info("Starting device synchronously")
+            self._sync_thread = threading.Thread(
                 target=asyncio.run,
                 args=(
                     self._start(
@@ -152,7 +163,8 @@ class Device:
             ).start()
             while self._queue.empty():
                 time.sleep(0.1)
-            while True:
+            self._loop_forever = True
+            while self._loop_forever:
                 time.sleep(0.1)
 
     def destroy(self):
@@ -167,7 +179,8 @@ class Device:
     def stop(self, loop: Optional[asyncio.AbstractEventLoop] = None):
         logger.info("Disconnecting from MQTT broker")
         if loop is None:
-            return self._mqtt.disconnect()
+            self._loop_forever = False
+            self._mqtt.disconnect()
         else:
             # Gather all pending tasks
             tasks = [t for t in asyncio.all_tasks() if t is not asyncio.current_task()]
@@ -318,7 +331,7 @@ class Device:
         return decorator
 
     def sleep(self, seconds: float):
-        return async_to_sync(asyncio.sleep)(seconds)
+        time.sleep(seconds)
 
     @awaitable(sleep)
     async def sleep(self, seconds: float):

@@ -19,9 +19,13 @@ try:
 
     # Update device status
     device.status("Hello, World!")
+
+    # Wait for 30 seconds
+    device.sleep(30)
 except KeyboardInterrupt:
     pass
 finally:
     # Remove the device from Home Assistant
+    # After 30 seconds or if Ctrl+C is pressed
     device.destroy()
     device.stop()

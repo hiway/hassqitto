@@ -22,9 +22,14 @@ async def main():
 
         # Update device status
         await device.status("Hello, World!")
+
+        # Wait for 30 seconds
+        await device.sleep(30)
     except asyncio.CancelledError:
         pass
     finally:
+        # Remove the device from Home Assistant
+        # After 30 seconds or if Ctrl+C is pressed
         await device.destroy()
         await device.stop()
 
