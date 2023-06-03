@@ -11,17 +11,23 @@ device = hq.Device(name="Example Device")
 #   homeassistant.local:8123/config/devices/dashboard
 
 
+# Function to run when the device connects to the MQTT broker
+@device.on_connect
+async def device_connected():
+    print("Device connected")
+
+    # Update device status
+    await device.status("Hello, World!")
+
+
 async def main():
-    # Run the device with MQTT username and password "example"
-    # Default MQTT broker: homeassistant.local:1883
     try:
-        await device.start(
+        # Run the device with MQTT username and password "example"
+        # Default MQTT broker: homeassistant.local:1883
+        await device.run(
             username="example",
             password="example",
         )
-
-        # Update device status
-        await device.status("Hello, World!")
     except asyncio.CancelledError:
         pass
     finally:

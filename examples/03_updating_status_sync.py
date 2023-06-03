@@ -9,6 +9,7 @@ device = hq.Device(name="Example Device")
 # To see the device, open the following URL in browser:
 #   homeassistant.local:8123/config/devices/dashboard
 
+
 try:
     # Run the device with MQTT username and password "example"
     # Default MQTT broker: homeassistant.local:1883
@@ -17,8 +18,12 @@ try:
         password="example",
     )
 
-    # Update device status
-    device.status("Hello, World!")
+    counter = 0
+    while True:
+        device.status(f"Running {str(counter)}")
+        device.sleep(3)
+        counter += 1
+
 except KeyboardInterrupt:
     pass
 finally:

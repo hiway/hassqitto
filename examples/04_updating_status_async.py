@@ -12,22 +12,26 @@ device = hq.Device(name="Example Device")
 
 
 async def main():
-    # Run the device with MQTT username and password "example"
-    # Default MQTT broker: homeassistant.local:1883
     try:
+        # Run the device with MQTT username and password "example"
+        # Default MQTT broker: homeassistant.local:1883
         await device.start(
             username="example",
             password="example",
         )
 
-        # Update device status
-        await device.status("Hello, World!")
+        counter = 0
+        while True:
+            await device.status(f"Running {str(counter)}")
+            await device.sleep(3)
+            counter += 1
+
     except asyncio.CancelledError:
         pass
     finally:
+        # Remove the device from Home Assistant
         await device.destroy()
         await device.stop()
 
 
-if __name__ == "__main__":
-    asyncio.run(main())
+asyncio.run(main())
