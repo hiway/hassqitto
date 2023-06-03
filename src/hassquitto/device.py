@@ -7,11 +7,14 @@ from dataclasses import dataclass, field
 from typing import Optional
 
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
+from asgiref.sync import async_to_sync
+from asyncgnostic import awaited, awaitable
 
 from . import symbols, validate
 from .logging import get_logger
 from .topics import Topics
 from .transport import AsyncMQTT
+
 
 logger = get_logger(__name__)
 
@@ -72,8 +75,12 @@ class Device:
             username=username,
             password=password,
         )
-        while True:
-            await asyncio.sleep(1)
+        try:
+            while True:
+                await asyncio.sleep(1)
+        except asyncio.CancelledError:
+            logger.info("Quitting")
+            pass
 
     def run(
         self,
@@ -82,22 +89,30 @@ class Device:
         username: str = None,
         password: str = None,
     ):
-        asyncio.run(
-            self.start(
+        if awaited():
+            return self.start(
                 host=host,
                 port=port,
                 username=username,
                 password=password,
             )
-        )
+        else:
+            asyncio.run(
+                self.start(
+                    host=host,
+                    port=port,
+                    username=username,
+                    password=password,
+                )
+            )
 
     def destroy(self):
         logger.info("Removing device from Home Assistant")
-        self._mqtt.sync_publish(self._topics.config, "")
+        return self._mqtt.publish(self._topics.config, "")
 
     def stop(self):
         logger.info("Disconnecting from MQTT broker")
-        self._mqtt.sync_disconnect()
+        return self._mqtt.disconnect()
 
     @property
     def _device_config(self):
@@ -170,6 +185,15 @@ class Device:
             symbols.DeviceAvailability.OFFLINE.value,
         )
 
+    def status(self, status: Optional[str] = None, retain: bool = False):
+        if status is None:
+            logger.info(f"Get device status: {self._status}")
+            return self._status
+        self._mqtt.publish(self._topics.state, status, retain=retain)
+        self._status = status
+        logger.info(f"Publish device status: {status}")
+
+    @awaitable(status)
     async def status(self, status: Optional[str] = None, retain: bool = False):
         if status is None:
             logger.info(f"Get device status: {self._status}")
@@ -195,3 +219,10 @@ class Device:
             return func
 
         return decorator
+
+    def sleep(self, seconds: float):
+        return async_to_sync(asyncio.sleep)(seconds)
+
+    @awaitable(sleep)
+    async def sleep(self, seconds: float):
+        return await asyncio.sleep(seconds)

@@ -15,6 +15,7 @@ paho-mqtt = "^1.6.1"
 APScheduler = "^3.10.1"
 python-slugify = "^8.0.1"
 asgiref = "^3.7.2"
+asyncgnostic = "^0.1.0"
 
 [tool.poetry.group.dev.dependencies]
 black = "^23.1.0"
