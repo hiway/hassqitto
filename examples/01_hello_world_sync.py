@@ -23,7 +23,7 @@ def device_connected():
 try:
     # Run the device with MQTT username and password "example"
     # Default MQTT broker: homeassistant.local:1883
-    device.run(
+    device.start(
         username="example",
         password="example",
     )

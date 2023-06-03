@@ -24,7 +24,7 @@ async def device_connected():
 async def main():
     # Run the device with MQTT username and password "example"
     # Default MQTT broker: homeassistant.local:1883
-    await device.run(
+    await device.start(
         username="example",
         password="example",
     )

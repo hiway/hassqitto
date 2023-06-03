@@ -64,7 +64,7 @@ class Device:
         self._on_connect_callback = None
         self._queue = asyncio.Queue()
 
-    async def start(
+    async def _start(
         self,
         host: str = "homeassistant.local",
         port: int = 1883,
@@ -73,7 +73,7 @@ class Device:
         loop_forever: bool = True,
     ):
         self._mqtt.loop = asyncio.get_event_loop()
-        self._mqtt.on_connect(self._start)
+        self._mqtt.on_connect(self._on_connect)
         self._mqtt.on_message(self._on_message)
         logger.info("Connecting to MQTT broker")
         await self._mqtt.connect(
@@ -88,7 +88,7 @@ class Device:
         except asyncio.CancelledError:
             pass
 
-    def run(
+    def start(
         self,
         host: str = "homeassistant.local",
         port: int = 1883,
@@ -96,7 +96,7 @@ class Device:
         password: str = None,
     ):
         if awaited():
-            return self.start(
+            return self._start(
                 host=host,
                 port=port,
                 username=username,
@@ -107,7 +107,7 @@ class Device:
             threading.Thread(
                 target=asyncio.run,
                 args=(
-                    self.start(
+                    self._start(
                         host=host,
                         port=port,
                         username=username,
@@ -172,7 +172,7 @@ class Device:
         }
         return {k: v for k, v in config.items() if v}
 
-    async def _start(self, client, userdata, flags, rc):
+    async def _on_connect(self, client, userdata, flags, rc):
         if rc != 0:
             logger.error(f"Connection failed with code {rc}")
             return
