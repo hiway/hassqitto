@@ -1,3 +1,4 @@
+import time
 import logging
 import hassquitto as hq
 
@@ -12,11 +13,11 @@ device = hq.Device(name="Example Device")
 
 # Function to run when the device connects to the MQTT broker
 @device.on_connect
-async def device_connected():
+def device_connected():
     print("Device connected")
 
     # Update device status
-    await device.status("Hello, World!")
+    device.status("Hello, World!")
 
 
 try:
@@ -26,6 +27,13 @@ try:
         username="example",
         password="example",
     )
+    # device.sleep(0.5)
+    time.sleep(1)
+
+    # TODO: Fix this
+    # device.status("Hello, World!")
+    # TODO: Fix this
+
 except KeyboardInterrupt:
     # Stop the device when user presses Ctrl+C
     pass
