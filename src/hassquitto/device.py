@@ -94,6 +94,7 @@ class Device:
         port: int = 1883,
         username: str = None,
         password: str = None,
+        loop_forever: bool = False,
     ):
         if awaited():
             return self._start(
@@ -120,6 +121,40 @@ class Device:
             while self._queue.empty():
                 time.sleep(0.1)
 
+    def run(
+        self,
+        host: str = "homeassistant.local",
+        port: int = 1883,
+        username: str = None,
+        password: str = None,
+    ):
+        if awaited():
+            return self._start(
+                host=host,
+                port=port,
+                username=username,
+                password=password,
+                loop_forever=True,
+            )
+        else:
+            threading.Thread(
+                target=asyncio.run,
+                args=(
+                    self._start(
+                        host=host,
+                        port=port,
+                        username=username,
+                        password=password,
+                        loop_forever=True,
+                    ),
+                ),
+                daemon=True,
+            ).start()
+            while self._queue.empty():
+                time.sleep(0.1)
+            while True:
+                time.sleep(0.1)
+
     def destroy(self):
         logger.info("Removing device from Home Assistant")
         return self._mqtt.publish(self._topics.config, "")
@@ -142,14 +177,14 @@ class Device:
                 task.cancel()
 
             # Wait for all pending tasks to be cancelled
-            cancel_task = loop.create_task(asyncio.gather(*tasks, return_exceptions=True))
+            cancel_task = loop.create_task(
+                asyncio.gather(*tasks, return_exceptions=True)
+            )
             while True:
                 if cancel_task.done():
                     break
                 time.sleep(0.1)
             loop.stop()
-
-
 
     @awaitable(stop)
     async def stop(self, loop: Optional[asyncio.AbstractEventLoop] = None):
@@ -277,7 +312,7 @@ class Device:
         def decorator(func):
             kwargs = {"seconds": seconds, "minutes": minutes, "hours": hours}
             kwargs = {k: v for k, v in kwargs.items() if v}
-            self.scheduler.add_job(func, "interval", **kwargs)
+            self._scheduler.add_job(func, "interval", **kwargs)
             return func
 
         return decorator
