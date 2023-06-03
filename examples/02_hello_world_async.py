@@ -8,7 +8,7 @@ logging.getLogger("hassquitto").setLevel(logging.DEBUG)
 device = hq.Device(name="Example Device")
 
 # To see the device, open the following URL in browser:
-#   homeassistant.local:8123/config/devices/dashboard
+#   http://homeassistant.local:8123/config/devices/dashboard
 
 
 async def main():
