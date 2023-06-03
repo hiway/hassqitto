@@ -27,15 +27,15 @@ try:
         username="example",
         password="example",
     )
-    # device.sleep(0.5)
-    time.sleep(1)
-
-    # TODO: Fix this
-    # device.status("Hello, World!")
-    # TODO: Fix this
+    device.sleep(1)
+    
+    counter = 0
+    while True:
+        device.status(f"Uptime: {str(counter)} seconds.")
+        counter += 1
+        device.sleep(1)
 
 except KeyboardInterrupt:
-    # Stop the device when user presses Ctrl+C
     pass
 finally:
     # Remove the device from Home Assistant

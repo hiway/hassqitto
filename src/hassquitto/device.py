@@ -3,7 +3,11 @@ Device
 """
 import asyncio
 import json
+import signal
+import time
+import threading
 from dataclasses import dataclass, field
+from inspect import isawaitable, iscoroutinefunction
 from typing import Optional
 
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
@@ -58,6 +62,7 @@ class Device:
 
         self._status = None
         self._on_connect_callback = None
+        self._queue = asyncio.Queue()
 
     async def start(
         self,
@@ -65,7 +70,9 @@ class Device:
         port: int = 1883,
         username: str = None,
         password: str = None,
+        loop_forever: bool = True,
     ):
+        self._mqtt.loop = asyncio.get_event_loop()
         self._mqtt.on_connect(self._start)
         self._mqtt.on_message(self._on_message)
         logger.info("Connecting to MQTT broker")
@@ -76,10 +83,9 @@ class Device:
             password=password,
         )
         try:
-            while True:
+            while loop_forever:
                 await asyncio.sleep(1)
         except asyncio.CancelledError:
-            logger.info("Quitting")
             pass
 
     def run(
@@ -95,24 +101,60 @@ class Device:
                 port=port,
                 username=username,
                 password=password,
+                loop_forever=False,
             )
         else:
-            asyncio.run(
-                self.start(
-                    host=host,
-                    port=port,
-                    username=username,
-                    password=password,
-                )
-            )
+            threading.Thread(
+                target=asyncio.run,
+                args=(
+                    self.start(
+                        host=host,
+                        port=port,
+                        username=username,
+                        password=password,
+                        loop_forever=True,
+                    ),
+                ),
+                daemon=True,
+            ).start()
+            while self._queue.empty():
+                time.sleep(0.1)
 
     def destroy(self):
         logger.info("Removing device from Home Assistant")
         return self._mqtt.publish(self._topics.config, "")
 
-    def stop(self):
+    @awaitable(destroy)
+    async def destroy(self):
+        logger.info("Removing device from Home Assistant")
+        await self._mqtt.publish(self._topics.config, "")
+
+    def stop(self, loop: Optional[asyncio.AbstractEventLoop] = None):
         logger.info("Disconnecting from MQTT broker")
-        return self._mqtt.disconnect()
+        if loop is None:
+            return self._mqtt.disconnect()
+        else:
+            # Gather all pending tasks
+            tasks = [t for t in asyncio.all_tasks() if t is not asyncio.current_task()]
+
+            # Cancel all pending tasks
+            for task in tasks:
+                task.cancel()
+
+            # Wait for all pending tasks to be cancelled
+            cancel_task = loop.create_task(asyncio.gather(*tasks, return_exceptions=True))
+            while True:
+                if cancel_task.done():
+                    break
+                time.sleep(0.1)
+            loop.stop()
+
+
+
+    @awaitable(stop)
+    async def stop(self, loop: Optional[asyncio.AbstractEventLoop] = None):
+        logger.info("Disconnecting from MQTT broker")
+        await self._mqtt.disconnect()
 
     @property
     def _device_config(self):
@@ -151,12 +193,16 @@ class Device:
         await self._mqtt.publish(config_topic, json.dumps(config))
         await self._mqtt.subscribe(self._topics.command)
         await self._mqtt.subscribe(self._topics.state)
-        await asyncio.sleep(0.5)
+        await asyncio.sleep(1)
         await self.available()
         self._scheduler.start()
         if self._on_connect_callback:
             logger.info("Running on_connect callback")
-            await self._on_connect_callback()
+            if iscoroutinefunction(self._on_connect_callback):
+                await self._on_connect_callback()
+            else:
+                self._on_connect_callback()
+        await self._queue.put(True)
 
     async def _on_message(self, client, userdata, message):
         if message.topic == self._topics.command:
@@ -171,6 +217,14 @@ class Device:
         logger.info(f"Received state: {payload}")
         self._status = payload.decode()
 
+    def available(self):
+        logger.info("Device is available")
+        return self._mqtt.publish(
+            self._topics.availability,
+            symbols.DeviceAvailability.ONLINE.value,
+        )
+
+    @awaitable(available)
     async def available(self):
         logger.info("Device is available")
         await self._mqtt.publish(
@@ -178,6 +232,14 @@ class Device:
             symbols.DeviceAvailability.ONLINE.value,
         )
 
+    def unavailable(self):
+        logger.info("Device is unavailable")
+        return self._mqtt.publish(
+            self._topics.availability,
+            symbols.DeviceAvailability.OFFLINE.value,
+        )
+
+    @awaitable(unavailable)
     async def unavailable(self):
         logger.info("Device is unavailable")
         await self._mqtt.publish(
