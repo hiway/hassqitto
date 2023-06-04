@@ -167,43 +167,6 @@ class Device:
             while self._loop_forever:
                 time.sleep(0.1)
 
-    def destroy(self):
-        logger.info("Removing device from Home Assistant")
-        return self._mqtt.publish(self._topics.config, "")
-
-    @awaitable(destroy)
-    async def destroy(self):
-        logger.info("Removing device from Home Assistant")
-        await self._mqtt.publish(self._topics.config, "")
-
-    def stop(self, loop: Optional[asyncio.AbstractEventLoop] = None):
-        logger.info("Disconnecting from MQTT broker")
-        if loop is None:
-            self._loop_forever = False
-            self._mqtt.disconnect()
-        else:
-            # Gather all pending tasks
-            tasks = [t for t in asyncio.all_tasks() if t is not asyncio.current_task()]
-
-            # Cancel all pending tasks
-            for task in tasks:
-                task.cancel()
-
-            # Wait for all pending tasks to be cancelled
-            cancel_task = loop.create_task(
-                asyncio.gather(*tasks, return_exceptions=True)
-            )
-            while True:
-                if cancel_task.done():
-                    break
-                time.sleep(0.1)
-            loop.stop()
-
-    @awaitable(stop)
-    async def stop(self, loop: Optional[asyncio.AbstractEventLoop] = None):
-        logger.info("Disconnecting from MQTT broker")
-        await self._mqtt.disconnect()
-
     @property
     def _device_config(self):
         config = {
@@ -312,6 +275,50 @@ class Device:
         self._status = status
         logger.info(f"Publish device status: {status}")
 
+    def sleep(self, seconds: float):
+        time.sleep(seconds)
+
+    @awaitable(sleep)
+    async def sleep(self, seconds: float):
+        return await asyncio.sleep(seconds)
+
+    def destroy(self):
+        logger.info("Removing device from Home Assistant")
+        return self._mqtt.publish(self._topics.config, "")
+
+    @awaitable(destroy)
+    async def destroy(self):
+        logger.info("Removing device from Home Assistant")
+        await self._mqtt.publish(self._topics.config, "")
+
+    def stop(self, loop: Optional[asyncio.AbstractEventLoop] = None):
+        logger.info("Disconnecting from MQTT broker")
+        if loop is None:
+            self._loop_forever = False
+            self._mqtt.disconnect()
+        else:
+            # Gather all pending tasks
+            tasks = [t for t in asyncio.all_tasks() if t is not asyncio.current_task()]
+
+            # Cancel all pending tasks
+            for task in tasks:
+                task.cancel()
+
+            # Wait for all pending tasks to be cancelled
+            cancel_task = loop.create_task(
+                asyncio.gather(*tasks, return_exceptions=True)
+            )
+            while True:
+                if cancel_task.done():
+                    break
+                time.sleep(0.1)
+            loop.stop()
+
+    @awaitable(stop)
+    async def stop(self, loop: Optional[asyncio.AbstractEventLoop] = None):
+        logger.info("Disconnecting from MQTT broker")
+        await self._mqtt.disconnect()
+
     def on_connect(self, func):
         self._on_connect_callback = func
         return func
@@ -329,10 +336,3 @@ class Device:
             return func
 
         return decorator
-
-    def sleep(self, seconds: float):
-        time.sleep(seconds)
-
-    @awaitable(sleep)
-    async def sleep(self, seconds: float):
-        return await asyncio.sleep(seconds)
