@@ -9,8 +9,7 @@ from inspect import isawaitable, iscoroutinefunction
 from typing import Callable, Coroutine, Optional, Union
 
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
-from asgiref.sync import async_to_sync, sync_to_async
-from asyncgnostic import awaited, awaitable
+from asyncgnostic import awaitable
 
 from hassquitto import symbols, validate
 from hassquitto.logging import get_logger
@@ -136,7 +135,7 @@ class Device:
             time.sleep(0.1)
         logger.debug("Available")
         if not self._on_connect:
-            logger.debug("### No on_connect function defined")
+            logger.debug("No on_connect function defined")
             return
         if callable(self._on_connect):
             logger.debug("Calling on_connect function")
@@ -168,6 +167,7 @@ class Device:
         logger.debug("Connected")
         await self._available_event.wait()
         logger.debug("Available")
+
         if not self._on_connect:
             logger.debug("No on_connect function defined")
             return
@@ -237,7 +237,6 @@ class Device:
         await self._mqtt.subscribe(self._topics.config)
         await self._mqtt.publish(self._topics.config, json.dumps(self._status_config))
         await asyncio.sleep(0.5)
-        await self._mqtt.publish(self._topics.availability, "online")
         self._connected_event.set()
 
     def _on_disconnect_callback(self, client, userdata, rc):
@@ -308,12 +307,6 @@ class Device:
             self._available_event.set()
             self._available = True
             return True
-        # if message.topic == self._topics.availability and message.payload == b"offline":
-        #     if not self._available:
-        #         return True
-        #     self._available_event.clear()
-        #     self._available = False
-        #     return True
         if message.topic == self._topics.state:
             self._status = message.payload.decode()
             self._status_was_set_event.set()
