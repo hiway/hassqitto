@@ -17,8 +17,7 @@ try:
     # Start scheduler
     device.start()
 
-    counter = 0
-    while True:
+    for counter in range(10):
         device.status(f"Running {str(counter)}")
         device.sleep(1)
         counter += 1

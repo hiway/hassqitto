@@ -19,10 +19,9 @@ async def main():
         # Start scheduler
         await device.start()
 
-        counter = 0
-        while True:
+        for counter in range(10):
             await device.status(f"Running {str(counter)}")
-            await device.sleep(3)
+            await device.sleep(1)
             counter += 1
     except asyncio.CancelledError:
         pass
