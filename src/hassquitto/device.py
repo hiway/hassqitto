@@ -346,7 +346,7 @@ class Device:
         await self._mqtt.publish(self._topics.availability, "offline")
 
     def status(self, status: Optional[str] = None, retain: bool = False):
-        if status:
+        if status is not None:
             if isinstance(status, (int, float, bytes)):
                 status = str(status)
             elif not isinstance(status, str):
@@ -359,7 +359,7 @@ class Device:
 
     @awaitable(status)
     async def status(self, status: Optional[str] = None, retain: bool = False):
-        if status:
+        if status is not None:
             if isinstance(status, (int, float, bytes)):
                 status = str(status)
             elif not isinstance(status, str):

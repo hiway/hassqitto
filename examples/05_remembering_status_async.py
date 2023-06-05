@@ -34,6 +34,9 @@ async def main():
     except asyncio.CancelledError:
         pass
     finally:
+        # Reset status
+        # await device.status("", retain=True)
+
         # Remove the device from Home Assistant
         await device.destroy()
         await device.disconnect()

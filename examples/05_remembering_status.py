@@ -32,6 +32,9 @@ try:
 except KeyboardInterrupt:
     pass
 finally:
+    # Reset status
+    # device.status("", retain=True)
+
     # Remove the device from Home Assistant
     device.destroy()
     device.disconnect()
