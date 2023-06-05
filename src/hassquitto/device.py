@@ -379,8 +379,7 @@ class Device:
     @awaitable(status_set_confirm)
     async def status_set_confirm(self):
         logger.debug("status_set_confirm called")
-        while not self._status_was_set_event.is_set():
-            await asyncio.sleep(0.1)
+        await self._status_was_set_event.wait()
         self._status_was_set_event.clear()
 
     def destroy(self):
