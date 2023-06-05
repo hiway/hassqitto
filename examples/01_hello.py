@@ -25,7 +25,7 @@ try:
 
     # Wait for 10 seconds
     device.sleep(10)
-except asyncio.CancelledError:
+except KeyboardInterrupt:
     pass
 finally:
     # Remove the device from Home Assistant
