@@ -345,14 +345,30 @@ class Device:
         logger.debug("not_available called")
         await self._mqtt.publish(self._topics.availability, "offline")
 
-    def status(self, status: str):
-        logger.debug("status called with status: %s", status)
-        self._mqtt.publish(self._topics.state, status)
+    def status(self, status: Optional[str] = None, retain: bool = False):
+        if status:
+            if isinstance(status, (int, float, bytes)):
+                status = str(status)
+            elif not isinstance(status, str):
+                raise TypeError("status must be a string")
+            logger.debug("status called with status: %s, retain: %s", status, retain)
+            self._mqtt.publish(self._topics.state, status, retain=retain)
+        else:
+            logger.debug("status called without status")
+            return self._status
 
     @awaitable(status)
-    async def status(self, status: str):
-        logger.debug("status called with status: %s", status)
-        await self._mqtt.publish(self._topics.state, status)
+    async def status(self, status: Optional[str] = None, retain: bool = False):
+        if status:
+            if isinstance(status, (int, float, bytes)):
+                status = str(status)
+            elif not isinstance(status, str):
+                raise TypeError("status must be a string")
+            logger.debug("status called with status: %s, retain: %s", status, retain)
+            await self._mqtt.publish(self._topics.state, status, retain=retain)
+        else:
+            logger.debug("status called without status")
+            return self._status
 
     def status_set_confirm(self):
         logger.debug("status_set_confirm called")
