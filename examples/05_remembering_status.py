@@ -19,7 +19,6 @@ def on_interval():
     counter = int(device.status())
     counter += 1
     device.status(counter, retain=True)
-    device.sleep(1)
 
 
 try:
