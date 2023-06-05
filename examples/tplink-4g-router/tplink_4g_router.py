@@ -271,7 +271,7 @@ class TPLink4GRouter(hq.Device):
         name="Text message",
     )
     reboot_router = hq.Button(name="Reboot Router")
-    status = hq.Sensor(name="Status", entity_category="diagnostic")
+    status = hq.Sensor(name="Script status", entity_category="diagnostic")
     router_url = hq.Sensor(name="Router URL", entity_category="diagnostic")
 
 
@@ -287,10 +287,10 @@ device.manufacturer = "TP-Link"
 
 
 @device.on_connected
-@device.on_interval(minutes=2)
+@device.on_interval(minutes=5)
 def on_connected():
     try:
-        device.status.publish_state("Querying...")
+        device.status.publish_state("querying")
         api.open_browser()
         api.login()
         status = api.get_status()
@@ -302,7 +302,7 @@ def on_connected():
         device.ipv6_address.publish_state(status.ipv6_address)
     except Exception as exc:
         logger.error(exc)
-        device.status.publish_state("Error")
+        device.status.publish_state("error")
 
     try:
         for sms in reversed(api.unread_messages(limit=3)):
@@ -312,10 +312,10 @@ def on_connected():
             time.sleep(1)
 
         api.logout()
-        device.status.publish_state("Online")
+        device.status.publish_state("idle")
     except Exception as exc:
         logger.error(exc)
-        device.status.publish_state("Online")
+        device.status.publish_state("idle")
     finally:
         api.logout()
         api.close_browser()
@@ -326,7 +326,7 @@ def reboot_router_on_click(_state):
     reboot_thread = threading.Thread(target=reboot_router)
     reboot_thread.start()
 
-    device.status.publish_state("Rebooting...")
+    device.status.publish_state("rebooting router")
     device.set_not_available()
     device.set_offline()
 
@@ -339,7 +339,7 @@ def reboot_router():
         api.close_browser()
     except Exception as exc:
         logger.error(exc)
-        device.status.publish_state("Error")
+        device.status.publish_state("error")
     finally:
         try:
             api.close_browser()
@@ -353,7 +353,7 @@ def reboot_router():
                 _ = requests.get(ROUTER_URL, timeout=10)
                 device.set_available()
                 device.set_online()
-                device.status.publish_state("Online")
+                device.status.publish_state("idle")
                 break
             except Exception as exc:
                 logger.error(exc)
@@ -371,7 +371,7 @@ try:
     # Set device as available and online.
     device.set_available()
     device.set_online()
-    device.status.publish_state("Online")
+    device.status.publish_state("starting")
     device.router_url.publish_state(ROUTER_URL)
 
     # Loop forever.
@@ -382,6 +382,7 @@ except KeyboardInterrupt:
     pass
 
 finally:
+    device.status.publish_state("stopped")
     # Remove example device from Home Assistant.
     # device.destroy_discovery()
 
