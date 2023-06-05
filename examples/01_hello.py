@@ -1,5 +1,7 @@
+import asyncio
 import logging
 import hassquitto as hq
+
 
 logging.getLogger("hassquitto").setLevel(logging.DEBUG)
 
@@ -9,23 +11,25 @@ device = hq.Device(name="Example Device")
 # To see the device, open the following URL in browser:
 #   http://homeassistant.local:8123/config/devices/dashboard
 
-try:
-    # Run the device with MQTT username and password "example"
-    # Default MQTT broker: homeassistant.local:1883
-    device.start(
-        username="example",
-        password="example",
-    )
 
-    # Update device status
+try:
+    # Defaults: host=homeassistant.local, port=1883
+    device.connect(username="example", password="example")
+
+    # Start scheduler
+    device.start()
+
+    # Set device status
+    print("Setting status...")
     device.status("Hello, World!")
 
-    # Wait for 30 seconds
-    device.sleep(30)
-except KeyboardInterrupt:
+    # Wait for 10 seconds
+    device.sleep(10)
+except asyncio.CancelledError:
     pass
 finally:
     # Remove the device from Home Assistant
-    # After 30 seconds or if Ctrl+C is pressed
+    # After 10 seconds or if Ctrl+C is pressed
     device.destroy()
+    device.disconnect()
     device.stop()

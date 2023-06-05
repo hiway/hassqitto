@@ -20,12 +20,14 @@ def device_connected():
 
 
 try:
-    # Run the device with MQTT username and password "example"
-    # Default MQTT broker: homeassistant.local:1883
-    device.run(
-        username="example",
-        password="example",
-    )
+    # Defaults: host=homeassistant.local, port=1883
+    device.connect(username="example", password="example")
+
+    # Start scheduler
+    device.start()
+
+    # Wait for 10 seconds
+    device.sleep(10)
 except KeyboardInterrupt:
     pass
 finally:

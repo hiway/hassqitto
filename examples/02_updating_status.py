@@ -11,17 +11,16 @@ device = hq.Device(name="Example Device")
 
 
 try:
-    # Run the device with MQTT username and password "example"
-    # Default MQTT broker: homeassistant.local:1883
-    device.start(
-        username="example",
-        password="example",
-    )
+    # Defaults: host=homeassistant.local, port=1883
+    device.connect(username="example", password="example")
+
+    # Start scheduler
+    device.start()
 
     counter = 0
     while True:
         device.status(f"Running {str(counter)}")
-        device.sleep(3)
+        device.sleep(1)
         counter += 1
 
 except KeyboardInterrupt:
@@ -29,4 +28,5 @@ except KeyboardInterrupt:
 finally:
     # Remove the device from Home Assistant
     device.destroy()
+    device.disconnect()
     device.stop()

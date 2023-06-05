@@ -14,7 +14,7 @@ counter = 0
 
 
 # Function to run when the device connects to the MQTT broker
-@device.on_interval(seconds=2)
+@device.on_interval(1)
 async def tick():
     global counter
     print(f"Tick {counter}")
@@ -26,12 +26,14 @@ async def tick():
 
 async def main():
     try:
-        # Run the device with MQTT username and password "example"
-        # Default MQTT broker: homeassistant.local:1883
-        await device.run(
-            username="example",
-            password="example",
-        )
+        # Defaults: host=homeassistant.local, port=1883
+        await device.connect(username="example", password="example")
+
+        # Start scheduler
+        await device.start()
+
+        # Wait for 10 seconds
+        await device.sleep(10)
     except asyncio.CancelledError:
         pass
     finally:

@@ -13,7 +13,7 @@ counter = 0
 
 
 # Function to run when the device connects to the MQTT broker
-@device.on_interval(seconds=2)
+@device.on_interval(1)
 def tick():
     global counter
     print(f"Tick {counter}")
@@ -26,10 +26,14 @@ def tick():
 try:
     # Run the device with MQTT username and password "example"
     # Default MQTT broker: homeassistant.local:1883
-    device.run(
-        username="example",
-        password="example",
-    )
+    # Defaults: host=homeassistant.local, port=1883
+    device.connect(username="example", password="example")
+
+    # Start scheduler
+    device.start()
+
+    # Wait for 10 seconds
+    device.sleep(10)
 except KeyboardInterrupt:
     pass
 finally:

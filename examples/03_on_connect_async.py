@@ -22,12 +22,14 @@ async def device_connected():
 
 async def main():
     try:
-        # Run the device with MQTT username and password "example"
-        # Default MQTT broker: homeassistant.local:1883
-        await device.run(
-            username="example",
-            password="example",
-        )
+        # Defaults: host=homeassistant.local, port=1883
+        await device.connect(username="example", password="example")
+
+        # Start scheduler
+        await device.start()
+
+        # Wait for 10 seconds
+        await device.sleep(10)
     except asyncio.CancelledError:
         pass
     finally:
