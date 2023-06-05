@@ -101,6 +101,8 @@ class Device:
                 async def wrapper():
                     try:
                         return self._loop.run_in_executor(None, func)
+                    except asyncio.CancelledError:
+                        pass
                     except Exception as error:
                         logger.exception(error)
 
