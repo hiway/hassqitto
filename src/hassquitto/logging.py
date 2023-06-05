@@ -22,7 +22,7 @@ def get_logger(name: str) -> _logging.Logger:
     """
     logger = _logging.getLogger(name)
     formatter = _logging.Formatter(
-        "[%(asctime)s] [%(process)d] [%(levelname)s] %(message)s",
+        "[%(asctime)s] [%(levelname)s] [%(name)s] %(message)s",
         datefmt="%Y-%m-%d %H:%M:%S %z",
     )
     handler = _logging.StreamHandler()
