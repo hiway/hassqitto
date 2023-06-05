@@ -58,7 +58,7 @@ class Device:
         self._status = None  # type: Optional[str]
         self._available = False
 
-        self._mqtt = MqttTransport(client_id=self.name)
+        self._mqtt = MqttTransport(client_id=validate.slug(self.name))
 
         self._scheduler: AsyncIOScheduler = None
         self._scheduled_jobs = {}
