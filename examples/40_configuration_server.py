@@ -14,9 +14,10 @@ device = hq.Device(name="Example Device")
 # Configuration dictionary
 config = {"status": ""}
 
+# Quart app URL
 device.configuration_url = "http://localhost:8789/config"
 
-
+# Quart app
 app = Quart(__name__)
 
 
@@ -51,7 +52,7 @@ async def update_config():
         if key == "status":
             await device.status(form[key])
             await device.status_set_confirm()
-            # await asyncio.sleep(0.1)
+
     # Redirect back to the configuration page
     return redirect(url_for("config_page"))
 
