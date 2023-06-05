@@ -28,8 +28,7 @@ try:
     # Start scheduler
     device.start()
 
-    for counter in range(10):
-        device.sleep(1)
+    device.sleep(10)
 except KeyboardInterrupt:
     pass
 finally:
