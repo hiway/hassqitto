@@ -17,7 +17,7 @@ from asyncgnostic import awaited, awaitable
 from . import symbols, validate
 from .logging import get_logger
 from .topics import Topics
-from .transport import AsyncMQTT
+from .transport import MqttTransport
 
 
 logger = get_logger(__name__)
@@ -47,7 +47,7 @@ class Device:
         self.configuration_url = validate.url(self.configuration_url)
         self.discovery_prefix = validate.discovery_prefix(self.discovery_prefix)
 
-        self._mqtt = AsyncMQTT(client_id=self.name)
+        self._mqtt = MqttTransport(client_id=self.name)
         self._scheduler = AsyncIOScheduler()
         self._name_slug = validate.slug(self.name)
         self._object_id = validate.object_id(self.name)
