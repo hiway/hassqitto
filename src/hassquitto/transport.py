@@ -80,7 +80,13 @@ class MqttTransport:
             self._client.on_message = func
             return func
 
-    def connect(self, host: str, port: int, username: str, password: str) -> None:
+    def connect(
+        self,
+        username: str,
+        password: str,
+        host: str,
+        port: int,
+    ) -> None:
         """
         Connect to MQTT broker
         """
@@ -90,7 +96,13 @@ class MqttTransport:
         self._client.loop_start()
 
     @awaitable(connect)
-    async def connect(self, host: str, port: int, username: str, password: str) -> None:
+    async def connect(
+        self,
+        username: str,
+        password: str,
+        host: str,
+        port: int,
+    ) -> None:
         """
         Connect to MQTT broker
         """
