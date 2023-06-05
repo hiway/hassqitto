@@ -150,7 +150,12 @@ class MqttTransport:
             qos,
             retain,
         )
-        self._client.publish(topic, payload, qos, retain)
+        try:
+            self._client.publish(topic, payload, qos, retain)
+        except KeyboardInterrupt as error:
+            raise error
+        except Exception as e:
+            logger.error("Exception in publish: %s", e)
 
     @awaitable(publish)
     async def publish(
@@ -172,7 +177,12 @@ class MqttTransport:
             retain,
         )
         self.ensure_loop()
-        await sync_to_async(self._client.publish)(topic, payload, qos, retain)
+        try:
+            await sync_to_async(self._client.publish)(topic, payload, qos, retain)
+        except asyncio.CancelledError:
+            pass
+        except Exception as e:
+            logger.error("Exception in publish: %s", e)
 
     def subscribe(self, topic: str) -> None:
         """
